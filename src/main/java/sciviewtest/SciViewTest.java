@@ -6,7 +6,6 @@ import graphics.scenery.Mesh;
 import graphics.scenery.Node;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.gui.NewImage;
 import net.imagej.ImageJ;
 import net.imagej.ops.OpService;
 import net.imagej.ops.geom.geom3d.mesh.BitTypeVertexInterpolator;
@@ -45,10 +44,10 @@ public class SciViewTest {
         //sciViewService.initialize();
 
         // I'm getting a null back here resulting in a NullPointerException later:
-        SciView sciView = sciViewService.getActiveSciView();
+//        SciView sciView = sciViewService.getActiveSciView();
 
         // If I execute alternatively this line of code, it opens a window, but my code is no longer executed...
-        //SciView sciView = sciViewService.getOrCreateActiveSciView();
+        SciView sciView = sciViewService.getOrCreateActiveSciView();
 
         sciView.getCamera().setPosition( new GLVector( 0.0f, 0.0f, 5.0f ) );
         sciView.getCamera().setTargeted( true );
@@ -70,7 +69,6 @@ public class SciViewTest {
             //sciView.removeMesh(sciView.updateVolume());
         }
 
-        sciView.init();
         Node v = sciView.addVolume( Views.iterable(rai), imp.getTitle(), new float[] { 1, 1, 1 } );
         v.setName( "Volume Render Demo" );
 
