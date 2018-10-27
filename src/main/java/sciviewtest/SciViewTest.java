@@ -4,6 +4,9 @@ import clearcl.imagej.ClearCLIJ;
 import cleargl.GLVector;
 import graphics.scenery.Mesh;
 import graphics.scenery.Node;
+import graphics.scenery.Scene;
+import graphics.scenery.Settings;
+import graphics.scenery.volumes.Volume;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.NewImage;
@@ -17,6 +20,7 @@ import net.imglib2.type.logic.BitType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.view.Views;
 import org.scijava.Context;
+import org.scijava.thread.ThreadService;
 import org.scijava.ui.UIService;
 import sc.iview.SciView;
 import sc.iview.SciViewService;
@@ -32,7 +36,7 @@ public class SciViewTest {
 
         ImageJ ij = new ImageJ();
 
-        System.setProperty( "scijava.log.level:sc.iview", "debug" );
+        //System.setProperty( "scijava.log.level:sc.iview", "debug" );
         Context context = ij.context(); //new Context( ImageJService.class, SciJavaService.class, SCIFIOService.class, ThreadService.class);
 
         UIService ui = context.service( UIService.class );
@@ -40,12 +44,38 @@ public class SciViewTest {
         //ui.show(NewImage.createByteImage("tmp", 1,1,1, NewImage.FILL_BLACK));
 
         SciViewService sciViewService = context.service( SciViewService.class );
-        sciViewService.createSciView();
         //sciViewService.createSciView();
+        //
         //sciViewService.initialize();
+        //sciViewService.createSciView();
 
         // I'm getting a null back here resulting in a NullPointerException later:
-        SciView sciView = sciViewService.getActiveSciView();
+        //SciView sciView = //sciViewService.getActiveSciView();
+
+
+        // ------------------------------------------------------------------
+        // workaround to get a SciView window to interact with...
+        SciView sv = new SciView(ij.getContext());
+        ThreadService threadService = context.service(ThreadService.class);
+        threadService.run(() -> {
+            System.out.println("hello");
+            sv.main();
+            System.out.println("world");
+        });
+
+        for (int i = 0; i < 50; i++) {
+            if (sv.isInitialized()) {
+                break;
+            }
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        SciView sciView = sv;
+        // ------------------------------------------------------------------
 
         // If I execute alternatively this line of code, it opens a window, but my code is no longer executed...
         //SciView sciView = sciViewService.getOrCreateActiveSciView();
@@ -58,25 +88,38 @@ public class SciViewTest {
 
         // that's the image I would l
         ImagePlus imp = IJ.openImage("src/main/resources/simdata.tif");
+        IJ.run(imp, "8-bit", "");
 
         ClearCLIJ clij = ClearCLIJ.getInstance();
         clij.show(imp, "debug");
 
         RandomAccessibleInterval<UnsignedShortType> rai = clij.converter(imp).getRandomAccessibleInterval();
 
-        if (sciView.getActiveNode() != null)  {
-            // todo: remove old image
 
-            //sciView.removeMesh(sciView.updateVolume());
-        }
 
-        sciView.init();
-        Node v = sciView.addVolume( Views.iterable(rai), imp.getTitle(), new float[] { 1, 1, 1 } );
+        // code from Ulriks example
+        //sciView.setPushMode(false);
+
+        //Settings settings = sciView.getScenerySettings();
+        //settings.set("Renderer.HDR.Exposure", 20.0);
+        //settings.set("Renderer.HDR.Gamma", 1.8);
+
+        //Scene scene = (Scene) sciView.getAllSceneNodes()[0].getParent();
+
+        //fish = scene.getChildren().get(6);
+        //fish.renderScale = 0.05;
+
+
+
+
+        //sciView.init();
+        Volume v = (Volume) sciView.addVolume( Views.iterable(rai), imp.getTitle(), new float[] { 1, 1, 1 } );
         v.setName( "Volume Render Demo" );
+
 
         OpService ops = ij.op();
 
-        int isoLevel = 1;
+        int isoLevel = 33000;
 
         //        @SuppressWarnings("unchecked")
         Img<UnsignedShortType> cubeImg = ( Img<UnsignedShortType> ) rai;
@@ -91,6 +134,8 @@ public class SciViewTest {
 
 
         sciView.centerOnNode( sciView.getActiveNode() );
+
+
 
     }
 
