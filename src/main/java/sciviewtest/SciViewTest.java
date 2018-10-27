@@ -44,7 +44,7 @@ public class SciViewTest {
         //sciViewService.createSciView();
         //sciViewService.initialize();
 
-        // I'm getting a NullPointerException here:
+        // I'm getting a null back here resulting in a NullPointerException later:
         SciView sciView = sciViewService.getActiveSciView();
 
         // If I execute alternatively this line of code, it opens a window, but my code is no longer executed...
