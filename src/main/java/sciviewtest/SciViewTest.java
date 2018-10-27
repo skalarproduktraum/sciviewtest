@@ -40,7 +40,7 @@ public class SciViewTest {
         //ui.show(NewImage.createByteImage("tmp", 1,1,1, NewImage.FILL_BLACK));
 
         SciViewService sciViewService = context.service( SciViewService.class );
-        sciViewService.createSciView();
+        //sciViewService.createSciView();
         //sciViewService.createSciView();
         //sciViewService.initialize();
 
